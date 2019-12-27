@@ -1,19 +1,32 @@
-package com.service.zgbj.im;
+package com.service.zgbj.mysqlTab.tab;
 
-/**
- * author : fengzhangwei
- * date : 2019/12/19
- */
-public class ChatMessage {
+import javax.persistence.*;
 
+@Entity
+@Table(name = "table_offline_msg")
+public class offLineMsg {
+    //自增ID
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
+
+    @Column(name = "fromId")
     private String fromId;
+    @Column(name = "toId")
     private String toId;
+    @Column(name = "pid")
     private String pid;
+    @Column(name = "bodyType")
     private int bodyType;
+    @Column(name = "body")
     private String body;
+    @Column(name = "msgStatus")
     private int msgStatus;
+    @Column(name = "time")
     private Long time;
+    @Column(name = "type")
     private int type;
+    @Column(name = "conversation")
     private String conversation;
 
     public String getConversation() {
@@ -24,12 +37,12 @@ public class ChatMessage {
         this.conversation = conversation;
     }
 
-    public int getType() {
-        return type;
+    public Integer getId() {
+        return id;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getFromId() {
@@ -88,16 +101,11 @@ public class ChatMessage {
         this.time = time;
     }
 
-    @Override
-    public String toString() {
-        return "ChatMessage{" +
-                "fromId='" + fromId + '\'' +
-                ", toId='" + toId + '\'' +
-                ", pid='" + pid + '\'' +
-                ", bodyType=" + bodyType +
-                ", body='" + body + '\'' +
-                ", msgStatus=" + msgStatus +
-                ", time=" + time +
-                '}';
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

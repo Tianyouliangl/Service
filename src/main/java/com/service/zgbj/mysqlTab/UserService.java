@@ -5,7 +5,8 @@ import java.util.Map;
 public interface UserService {
     void createUser();
     String updateUser(Map<String, String[]> map);
-    void getAllUser();
+    String getAllUser(String uid);
     void deleteUser(String name);
     String Login(String mobile, String pwd);
+    String getUserInfo(String uid);
 }
