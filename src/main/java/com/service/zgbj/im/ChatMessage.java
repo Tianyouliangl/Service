@@ -15,6 +15,15 @@ public class ChatMessage {
     private Long time;
     private int type;
     private String conversation;
+    private int displaytime;
+
+    public int getDisplaytime() {
+        return displaytime;
+    }
+
+    public void setDisplaytime(int displaytime) {
+        this.displaytime = displaytime;
+    }
 
     public String getConversation() {
         return conversation;

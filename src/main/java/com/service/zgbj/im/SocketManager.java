@@ -7,8 +7,10 @@ import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.service.zgbj.mysqlTab.controller.ChatServiceImpl;
+import com.service.zgbj.mysqlTab.controller.HistoryServiceImpl;
 import com.service.zgbj.mysqlTab.controller.UserServiceImpl;
 import com.service.zgbj.utils.GsonUtil;
+import com.service.zgbj.utils.OfTenUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +26,12 @@ public class SocketManager {
     private UserServiceImpl sqlService;
     private ChatServiceImpl chatService;
     private SocketIOServer socketService;
+    private HistoryServiceImpl historyService;
 
-    public SocketManager(SocketIOServer server, UserServiceImpl userService, ChatServiceImpl chatServiceImp) {
+    public SocketManager(SocketIOServer server, UserServiceImpl userService, ChatServiceImpl chatServiceImp, HistoryServiceImpl historyServiceImpl) {
         this.sqlService = userService;
         this.chatService = chatServiceImp;
+        this.historyService = historyServiceImpl;
         if (server != null) {
             this.socketService = server;
             connectListener = new SocketConnectListener();
@@ -117,16 +121,20 @@ public class SocketManager {
             System.out.println("监听到消息========" + s);
             ChatMessage chatMessage = GsonUtil.GsonToBean(s, ChatMessage.class);
             handleChatMessage(chatMessage, ackRequest);
+            historyService.createTable(chatMessage.getFromId());
+            historyService.createTable(chatMessage.getToId());
+            historyService.insetData(chatMessage,chatMessage.getFromId());
+            historyService.insetData(chatMessage,chatMessage.getToId());
         }
     }
 
     private void handleChatMessage(ChatMessage s, AckRequest ackRequest) {
         String to_id = s.getToId();
         SocketIOClient client = mClientMap.get(to_id);
+        s.setMsgStatus(2);
         if (client != null) {
             sendChatMessage(client, s);
         } else {
-            s.setMsgStatus(2);
             // 存入离线消息表
             Boolean aBoolean = chatService.insertChatMessage(s);
             if (aBoolean) {
@@ -138,6 +146,7 @@ public class SocketManager {
 
     private void sendChatMessage(SocketIOClient client, ChatMessage s) {
         String json = GsonUtil.BeanToJson(s);
+        System.out.println("回调消息========" + json);
         client.sendEvent("chat", json);
     }
 

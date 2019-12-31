@@ -20,7 +20,7 @@ public class OfTenUtils {
         String a5 = combination(a3, a4);
         String a6 = getDeRedoMaxNumber(a1);
         String a7 = getDeRedoMaxNumber(a2);
-        return a5 + a6 + a7 + sort1.substring(sort1.length()-1,sort1.length()) + sort2.substring(sort2.length()-1,sort2.length());
+        return a5 + a6 + a7 + sort1.substring(sort1.length() - 1, sort1.length()) + sort2.substring(sort2.length() - 1, sort2.length());
     }
 
     /**
@@ -174,5 +174,11 @@ public class OfTenUtils {
             context = result.get(resultList.get(i)) + resultList.get(i);
         }
         return context;
+    }
+
+    public static String replace(String msg) {
+        String removeStr = "-";
+        String rpe = msg.replace(removeStr, "");
+        return rpe;
     }
 }

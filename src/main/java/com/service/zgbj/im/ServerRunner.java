@@ -2,7 +2,10 @@ package com.service.zgbj.im;
 
 import com.corundumstudio.socketio.SocketIOServer;
 
+import com.service.zgbj.mysqlTab.DataBaseService;
+import com.service.zgbj.mysqlTab.HistoryService;
 import com.service.zgbj.mysqlTab.controller.ChatServiceImpl;
+import com.service.zgbj.mysqlTab.controller.HistoryServiceImpl;
 import com.service.zgbj.mysqlTab.controller.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -18,6 +21,10 @@ public class ServerRunner implements CommandLineRunner {
     private UserServiceImpl service;
     @Autowired
     private ChatServiceImpl chatService;
+    @Autowired
+    private DataBaseService dataBaseService;
+    @Autowired
+    private HistoryServiceImpl historyService;
 
     @Autowired
     public ServerRunner(SocketIOServer server) {
@@ -26,7 +33,8 @@ public class ServerRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        new SocketManager(server,service,chatService);
+        new SocketManager(server,service,chatService,historyService);
+        dataBaseService.displayDataBase();
         server.start();
         System.out.println("socket.io启动成功！");
     }

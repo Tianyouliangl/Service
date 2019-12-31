@@ -125,6 +125,7 @@ public class UserServiceImpl implements UserService {
             userMap.put("email", map.get("email"));
             userMap.put("uid", map.get("uid"));
             userMap.put("money", map.get("money"));
+            userMap.put("online",map.get("online"));
         } else {
             statusMap.put("code", 0);
             statusMap.put("msg", "用户不存在或者密码错误");
@@ -160,6 +161,7 @@ public class UserServiceImpl implements UserService {
             userMap.put("sign", map.get("sign"));
             userMap.put("email", map.get("email"));
             userMap.put("uid",map.get("uid"));
+            userMap.put("online",map.get("online"));
         } else {
             statusMap.put("code", 0);
             statusMap.put("msg", "请求错误");

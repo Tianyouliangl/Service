@@ -17,9 +17,9 @@ public class ChatServiceImpl implements ChatService{
 
     @Override
     public Boolean insertChatMessage(ChatMessage msg) {
-        String sql = "insert into table_offline_msg(from_id,to_id,pid,type,time,body,body_type,msg_status,conversation) value (?,?,?,?,?,?,?,?,?)";
+        String sql = "insert into table_offline_msg(from_id,to_id,pid,type,time,body,body_type,msg_status,conversation,displaytime) value (?,?,?,?,?,?,?,?,?,?)";
         System.out.println(sql);
-        Object args[] = {msg.getFromId(),msg.getToId(),msg.getPid(),msg.getType(),msg.getTime(),msg.getBody(),msg.getBodyType(),msg.getMsgStatus(),msg.getConversation()};
+        Object args[] = {msg.getFromId(),msg.getToId(),msg.getPid(),msg.getType(),msg.getTime(),msg.getBody(),msg.getBodyType(),msg.getMsgStatus(),msg.getConversation(),msg.getDisplaytime()};
         int code =  jdbcTemplate.update(sql,args);
         if (code > 0){
             return true;
@@ -44,6 +44,7 @@ public class ChatServiceImpl implements ChatService{
             message.setType((int) map.get("type"));
             message.setTime((Long) map.get("time"));
             message.setMsgStatus((int) map.get("msg_status"));
+            message.setMsgStatus((int)map.get("displaytime"));
             chatMessageList.add(message);
         }
         return chatMessageList;
