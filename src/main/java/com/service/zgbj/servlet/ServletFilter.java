@@ -12,7 +12,6 @@ public class ServletFilter implements Filter {
         servletRequest.setCharacterEncoding("UTF-8");
         servletResponse.setCharacterEncoding("UTF-8");
         filterChain.doFilter(servletRequest,servletResponse);
-        System.out.println("设置编码 ------ utf-8 ------");
     }
 
 }

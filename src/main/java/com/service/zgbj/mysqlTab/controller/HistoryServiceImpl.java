@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class HistoryServiceImpl implements HistoryService {
+
+    private HashMap<String, Long> map = new HashMap();
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -50,21 +53,51 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public String getChatMessage(String tableName,String conversation,int pageNo, int pageSize) {
+    public String getChatMessage(String tableName, String conversation, int pageNo, int pageSize) {
+        String sql = null;
         HashMap<String, Object> statusMap = new HashMap<>();
+        List<ChatMessage> chatMessageList = new ArrayList<>();
         String t_name = OfTenUtils.replace(tableName);
-        String sql = "SELECT  * FROM history_"+t_name + " where id >" +(pageNo-1)*pageSize + " AND conversation = " + "'" + conversation + "'" + " ORDER BY time ASC LIMIT " + pageSize;
-       System.out.println("sql   :::    " + sql);
-        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
-        if (list.size() > 0){
-            statusMap.put("code",1);
-            statusMap.put("msg","成功");
-            statusMap.put("data", list);
+        Long mTime = map.get(conversation);
+        if (pageNo > 1){
+            if (mTime != null){
+                sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " AND time <" +  mTime + " ORDER BY time DESC LIMIT " + pageSize + ") aa" + " ORDER BY time";
+            }else {
+                sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " ORDER BY time DESC LIMIT " + (pageNo - 1) * pageSize + "," + pageSize + ") aa" + " ORDER BY time";
+            }
         }else {
+            sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " ORDER BY time DESC LIMIT " + (pageNo - 1) * pageSize + "," + pageSize + ") aa" + " ORDER BY time";
+        }
+//        sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " ORDER BY time DESC LIMIT " + (pageNo - 1) * pageSize + "," + pageSize + ") aa" + " ORDER BY time";
+        System.out.println("sql   :::    " + sql);
+        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
+
+        if (list.size() > 0) {
+            statusMap.put("code", 1);
+            statusMap.put("msg", "成功");
+            map.put((String) list.get(list.size() - 1).get("conversation"), (Long) list.get(0).get("time"));
+            for (int i = 0; i < list.size(); i++) {
+                Map<String, Object> map = list.get(i);
+                ChatMessage message = new ChatMessage();
+                message.setFromId((String) map.get("from_id"));
+                message.setToId((String) map.get("to_id"));
+                message.setPid((String) map.get("pid"));
+                message.setBody((String) map.get("body"));
+                message.setConversation((String) map.get("conversation"));
+                message.setBodyType((int) map.get("body_type"));
+                message.setMsgStatus((int) map.get("msg_status"));
+                message.setType((int) map.get("type"));
+                message.setDisplaytime((int) map.get("displaytime"));
+                message.setTime((Long) map.get("time"));
+                chatMessageList.add(message);
+            }
+            statusMap.put("data", chatMessageList);
+        } else {
             statusMap.put("code", 0);
             statusMap.put("msg", "没有更多记录了");
         }
         String json = GsonUtil.BeanToJson(statusMap);
+        System.out.println("历史记录===" + json);
         return json;
     }
 }
