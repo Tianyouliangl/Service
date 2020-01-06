@@ -53,9 +53,12 @@ public class SocketManager {
             System.out.println("--------客户端连接------");
             String client = getClientUid(socketIOClient);
             System.out.println("======userId=====" + client);
+            SocketIOClient ct = mClientMap.get(client);
+            if (ct == null){
+                sendOnLineASK(client, 1);
+            }
             mClientMap.put(client, socketIOClient);
             System.out.println("-------当前连接人数--------" + mClientMap.size());
-            sendOnLineASK(client, 1);
             List<ChatMessage> msg = chatService.getOffLineMsg(client);
 
             for (int i = 0; i < msg.size(); i++) {
