@@ -7,6 +7,7 @@ import com.service.zgbj.mysqlTab.HistoryService;
 import com.service.zgbj.mysqlTab.controller.ChatServiceImpl;
 import com.service.zgbj.mysqlTab.controller.HistoryServiceImpl;
 import com.service.zgbj.mysqlTab.controller.UserServiceImpl;
+import com.service.zgbj.thread.RedEnvelopeThread;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -34,8 +35,10 @@ public class ServerRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         new SocketManager(server,service,chatService,historyService);
+//        RedEnvelopeThread envelopeThread = new RedEnvelopeThread();
         dataBaseService.displayDataBase();
         server.start();
+//        envelopeThread.run();
         System.out.println("socket.io启动成功！");
     }
 }

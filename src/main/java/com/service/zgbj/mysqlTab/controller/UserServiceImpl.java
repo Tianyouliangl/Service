@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -170,5 +171,17 @@ public class UserServiceImpl implements UserService {
         String json = GsonUtil.BeanToJson(statusMap);
         System.out.println(json);
         return GsonUtil.unicodeToUtf8(json);
+    }
+
+    @Override
+    public BigDecimal getUserMoney(String uid) {
+        BigDecimal money = null;
+        String sql = "SELECT * FROM table_user WHERE uid = " + "'" + uid + "'";
+        System.out.println(sql);
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+        if (maps.size() > 0){
+             money = (BigDecimal) maps.get(0).get("money");
+        }
+        return money;
     }
 }

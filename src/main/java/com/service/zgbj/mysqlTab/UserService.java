@@ -1,5 +1,6 @@
 package com.service.zgbj.mysqlTab;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 public interface UserService {
@@ -9,4 +10,5 @@ public interface UserService {
     void deleteUser(String name);
     String Login(String mobile, String pwd);
     String getUserInfo(String uid);
+    BigDecimal getUserMoney(String uid);
 }

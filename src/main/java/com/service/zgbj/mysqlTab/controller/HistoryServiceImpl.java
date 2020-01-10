@@ -59,13 +59,13 @@ public class HistoryServiceImpl implements HistoryService {
         List<ChatMessage> chatMessageList = new ArrayList<>();
         String t_name = OfTenUtils.replace(tableName);
         Long mTime = map.get(conversation);
-        if (pageNo > 1){
-            if (mTime != null){
-                sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " AND time <" +  mTime + " ORDER BY time DESC LIMIT " + pageSize + ") aa" + " ORDER BY time";
-            }else {
+        if (pageNo > 1) {
+            if (mTime != null) {
+                sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " AND time <" + mTime + " ORDER BY time DESC LIMIT " + pageSize + ") aa" + " ORDER BY time";
+            } else {
                 sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " ORDER BY time DESC LIMIT " + (pageNo - 1) * pageSize + "," + pageSize + ") aa" + " ORDER BY time";
             }
-        }else {
+        } else {
             sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " ORDER BY time DESC LIMIT " + (pageNo - 1) * pageSize + "," + pageSize + ") aa" + " ORDER BY time";
         }
 //        sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " ORDER BY time DESC LIMIT " + (pageNo - 1) * pageSize + "," + pageSize + ") aa" + " ORDER BY time";
@@ -99,5 +99,24 @@ public class HistoryServiceImpl implements HistoryService {
         String json = GsonUtil.BeanToJson(statusMap);
         System.out.println("历史记录===" + json);
         return json;
+    }
+
+    @Override
+    public void updateHistoryStatus(String tabName, int status, String pid) {
+        String sql = "UPDATE history_" + tabName + "   SET status = " + "'" + status + "'" + " WHERE pid = " + "'" + pid + "'";
+        System.out.println(sql);
+        jdbcTemplate.update(sql);
+    }
+
+    @Override
+    public int getMsg(String tabName, String pid) {
+        String tName = OfTenUtils.replace(tabName);
+        String sql = "SELECT * FROM  history_" + tName + " WHERE pid = " + "'" + pid + "'";
+        System.out.println(sql);
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+        if (maps != null && maps.size() > 0){
+            return 1;
+        }
+        return 0;
     }
 }

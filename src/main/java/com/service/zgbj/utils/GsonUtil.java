@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.service.zgbj.im.ChatMessage;
+import com.service.zgbj.im.RedEnvelopeBean;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -142,6 +143,17 @@ public class GsonUtil {
             msg.setBody(fId+"下线了!");
         }
        return msg;
+    }
+
+    public static ChatMessage chatRedEnvelope(String fId){
+        ChatMessage msg = new ChatMessage();
+        msg.setFromId(fId);
+        msg.setTime(System.currentTimeMillis());
+        msg.setType(2);
+        msg.setBodyType(7);
+        msg.setMsgStatus(RedEnvelopeBean.STATUS_OVERTIME);
+        msg.setBody("红包超时未领取,已退还到您的账户");
+        return msg;
     }
 
     public static String unicodeToUtf8(String s) {
