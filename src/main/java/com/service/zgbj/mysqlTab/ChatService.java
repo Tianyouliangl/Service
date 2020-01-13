@@ -10,6 +10,7 @@ public interface ChatService {
     List<ChatMessage> getOffLineMsg(String id);
     Boolean removeMsg(String pid);
     List<RedEnvelopeBean> getAllRedEnvelope();
+    String getRedEnvelopePid(String pid);
     void updateRedEnvelope(int status,String pid);
     void addRedEnvelope(RedEnvelopeBean bean);
 }

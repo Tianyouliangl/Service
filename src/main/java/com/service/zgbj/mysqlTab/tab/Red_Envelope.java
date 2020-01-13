@@ -31,7 +31,7 @@ public class Red_Envelope {
     @Column(name = "pid")
     private String pid;
 
-    // 状态  0 未领取  1 已领取
+    // 状态  4 未领取  5 已领取
     @Column(name = "status")
     private int status;
 

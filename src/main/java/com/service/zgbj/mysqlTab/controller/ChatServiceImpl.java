@@ -3,11 +3,13 @@ package com.service.zgbj.mysqlTab.controller;
 import com.service.zgbj.im.ChatMessage;
 import com.service.zgbj.im.RedEnvelopeBean;
 import com.service.zgbj.mysqlTab.ChatService;
+import com.service.zgbj.utils.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -92,6 +94,36 @@ public class ChatServiceImpl implements ChatService{
             redList = null;
         }
         return redList;
+    }
+
+    @Override
+    public String getRedEnvelopePid(String pid) {
+        HashMap<String, Object> statusMap = new HashMap<>();
+        HashMap<String, Object> redEnvelopeMap = new HashMap<>();
+        String sql = "select * from table_red_envelope WHERE pid = " + "'" + pid + "'";
+        System.out.println(sql);
+        try {
+            List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
+            if (list.size() > 0) {
+                statusMap.put("code", 1);
+                statusMap.put("msg", "成功");
+                Map<String, Object> map = list.get(0);
+                redEnvelopeMap.put("fromId",map.get("from_id"));
+                redEnvelopeMap.put("toId",map.get("to_id"));
+                redEnvelopeMap.put("pid",map.get("pid"));
+                redEnvelopeMap.put("body",map.get("body"));
+                redEnvelopeMap.put("time",map.get("time"));
+                redEnvelopeMap.put("msgStatus",map.get("status"));
+                redEnvelopeMap.put("conversation",map.get("conversation"));
+                statusMap.put("data",redEnvelopeMap);
+            }else {
+                statusMap.put("code", 0);
+                statusMap.put("msg", "失败");
+            }
+        }catch (Exception e){
+
+        }
+        return GsonUtil.BeanToJson(statusMap);
     }
 
     // 修改未领取红包的状态

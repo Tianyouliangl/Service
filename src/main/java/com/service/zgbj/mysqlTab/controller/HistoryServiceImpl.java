@@ -103,7 +103,8 @@ public class HistoryServiceImpl implements HistoryService {
 
     @Override
     public void updateHistoryStatus(String tabName, int status, String pid) {
-        String sql = "UPDATE history_" + tabName + "   SET status = " + "'" + status + "'" + " WHERE pid = " + "'" + pid + "'";
+        String t_name = OfTenUtils.replace(tabName);
+        String sql = "UPDATE history_" + t_name + "   SET msg_status = " + "'" + status + "'" + " WHERE pid = " + "'" + pid + "'";
         System.out.println(sql);
         jdbcTemplate.update(sql);
     }

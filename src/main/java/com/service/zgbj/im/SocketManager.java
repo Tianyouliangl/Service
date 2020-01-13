@@ -114,20 +114,10 @@ public class SocketManager {
             System.out.println("监听到消息========" + s);
             mAckRequest = ackRequest;
             ChatMessage chatMessage = GsonUtil.GsonToBean(s, ChatMessage.class);
-            int bodyType = chatMessage.getBodyType();
-            int status = chatMessage.getMsgStatus();
             historyService.createTable(chatMessage.getFromId());
             historyService.createTable(chatMessage.getToId());
-            if (bodyType == 7 && status == RedEnvelopeBean.STATUS_ALREADY_RECEIVED){
-                SocketIOClient client = mClientMap.get(chatMessage.getToId());
-                if (client != null){
-                    sendChatMessage(client, chatMessage);
-                }else {
-                    addLineMsg(chatMessage.getBodyType(),chatMessage.getMsgStatus(),chatMessage);
-                }
-                ackRequest.sendAckData(GsonUtil.BeanToJson(chatMessage));
-            }else {
-                handleChatMessage(chatMessage, ackRequest);
+            handleChatMessage(chatMessage, ackRequest);
+            if (chatMessage.getBodyType() <= 7){
                 historyService.insetData(chatMessage, chatMessage.getFromId());
                 historyService.insetData(chatMessage, chatMessage.getToId());
             }
@@ -139,8 +129,9 @@ public class SocketManager {
         int bodyType = s.getBodyType();
         int status = s.getMsgStatus();
         SocketIOClient client = mClientMap.get(to_id);
+        addRedEnvelopeMsg(bodyType,status,s);
+        s.setMsgStatus(2);
         if (client != null) {
-            addRedEnvelopeMsg(bodyType,status,s);
             sendChatMessage(client, s);
         } else {
             addLineMsg(bodyType,status,s);
@@ -160,13 +151,7 @@ public class SocketManager {
                 bean.setBody(s.getBody());
                 bean.setConversation(s.getConversation());
                 chatService.addRedEnvelope(bean);
-                s.setMsgStatus(2);
-            } else if (status == RedEnvelopeBean.STATUS_ALREADY_RECEIVED) {
-                s.setMsgStatus(RedEnvelopeBean.STATUS_ALREADY_RECEIVED);
-                chatService.updateRedEnvelope(RedEnvelopeBean.STATUS_ALREADY_RECEIVED, s.getPid());
             }
-        }else {
-            s.setMsgStatus(2);
         }
     }
 
