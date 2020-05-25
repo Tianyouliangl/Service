@@ -10,8 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/all/user")
-public class allUserServlet extends HttpServlet {
+@WebServlet("/friend/allFriend")
+public class allFriendServlet extends HttpServlet {
     @Autowired
     private UserServiceImpl service;
 
@@ -22,6 +22,6 @@ public class allUserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().write(service.getAllUser(req.getParameter("uid")));
+        resp.getWriter().write(service.getAllFriend(req.getParameter("uid")));
     }
 }

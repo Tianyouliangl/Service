@@ -137,7 +137,7 @@ public class ChatServiceImpl implements ChatService{
     // 添加红包记录
     @Override
     public void addRedEnvelope(RedEnvelopeBean bean) {
-        String sql = "INSERT INTO table_red_envelope(from_id,to_id,pid,body,time,status,conversation) VALUE (?,?,?,?,?,?,?)";
+        String sql = "INSERT into table_red_envelope(from_id,to_id,pid,body,time,status,conversation) VALUE (?,?,?,?,?,?,?)";
         System.out.println(sql);
         Object args[] = {bean.getFromId(), bean.getToId(), bean.getPid(), bean.getBody(), bean.getTime(), bean.getStatus(), bean.getConversation()};
         jdbcTemplate.update(sql, args);

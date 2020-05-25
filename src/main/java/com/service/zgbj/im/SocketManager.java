@@ -10,7 +10,6 @@ import com.service.zgbj.mysqlTab.controller.ChatServiceImpl;
 import com.service.zgbj.mysqlTab.controller.HistoryServiceImpl;
 import com.service.zgbj.mysqlTab.controller.UserServiceImpl;
 import com.service.zgbj.utils.GsonUtil;
-import com.service.zgbj.utils.OfTenUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,12 +19,12 @@ public class SocketManager {
 
     public static AckRequest mAckRequest;
     //Socket客户端容器
-    private HashMap<String, SocketIOClient> mClientMap = new HashMap<>();
+    public static HashMap<String, SocketIOClient> mClientMap = new HashMap<>();
     private SocketConnectListener connectListener;
     private SocketDisConnectListener disConnectListener;
     private SocketDataListener dataListener;
     private UserServiceImpl sqlService;
-    private ChatServiceImpl chatService;
+    private static ChatServiceImpl chatService;
     public static SocketIOServer socketService;
     private HistoryServiceImpl historyService;
 
@@ -57,15 +56,37 @@ public class SocketManager {
         @Override
         public void onConnect(SocketIOClient socketIOClient) {
             System.out.println("--------客户端连接------");
-            String client = getClientUid(socketIOClient);
-            System.out.println("======userId=====" + client);
-            SocketIOClient ct = mClientMap.get(client);
-            if (ct == null) {
-                sendOnLineASK(client, 1);
+            String client_id = getClientUid(socketIOClient);
+            System.out.println("======userId=====" + client_id);
+
+            // 查询我所有的好友
+            String json = sqlService.getAllFriend(client_id);
+            FriendAllBean bean = GsonUtil.GsonToBean(json, FriendAllBean.class);
+            List<FriendAllBean.DataBean> data = bean.getData();
+            // 查看我的好友是否在线 在线的通知他们我上线了
+            // 遍历我的好友给我的备注
+            for (int i=0;i<data.size();i++){
+                FriendAllBean.DataBean dataBean = data.get(i);
+                //  > 0 在线
+                int online = dataBean.getOnline();
+                SocketIOClient ct = mClientMap.get(dataBean.getUid());
+                if (online > 0){
+                    String info = sqlService.getFriendUserInfo(dataBean.getUid(), client_id);
+                    FriendBean userBean = GsonUtil.GsonToBean(info,FriendBean.class);
+                    String remark = userBean.getData().getRemark();
+                    int code = userBean.getCode();
+                    if (code > 0){
+                        ChatMessage message = GsonUtil.chatOnLine(remark, 1);
+                        if (ct != null){
+                            ct.sendEvent("chat",GsonUtil.BeanToJson(message));
+                        }
+                    }
+
+                }
             }
-            mClientMap.put(client, socketIOClient);
+            mClientMap.put(client_id, socketIOClient);
             System.out.println("-------当前连接人数--------" + mClientMap.size());
-            sendChatMessage(client);
+            sendChatMessage(client_id);
         }
     }
 
@@ -90,17 +111,34 @@ public class SocketManager {
         public void onDisconnect(SocketIOClient socketIOClient) {
             HashMap<String, String[]> map = new HashMap<>();
             System.out.println("---------客户端断开连接------");
-            String client = getClientUid(socketIOClient);
-            SocketIOClient ioClient = mClientMap.get(client);
+            String client_id = getClientUid(socketIOClient);
+            SocketIOClient ioClient = mClientMap.get(client_id);
             if (ioClient != null) {
                 ioClient.disconnect();
             }
-            mClientMap.remove(client);
+            mClientMap.remove(client_id);
             System.out.println("---------当前连接人数-------" + mClientMap.size());
-            map.put("uid", new String[]{client});
+            map.put("uid", new String[]{client_id});
             map.put("online", new String[]{"0"});
             sqlService.updateUser(map);
-            sendOnLineASK(client, 0);
+
+            String json = sqlService.getAllFriend(client_id);
+            FriendAllBean bean = GsonUtil.GsonToBean(json, FriendAllBean.class);
+            List<FriendAllBean.DataBean> data = bean.getData();
+            for (int i=0;i<data.size();i++){
+                FriendAllBean.DataBean dataBean = data.get(i);
+                int online = dataBean.getOnline();
+                if (online > 0){
+                    String info = sqlService.getFriendUserInfo(dataBean.getUid(), client_id);
+                    FriendBean userBean = GsonUtil.GsonToBean(info,FriendBean.class);
+                    String remark = userBean.getData().getRemark();
+                    SocketIOClient ct = mClientMap.get(dataBean.getUid());
+                    ChatMessage message = GsonUtil.chatOnLine(remark, 0);
+                    if (ct != null){
+                        ct.sendEvent("chat",GsonUtil.BeanToJson(message));
+                    }
+                }
+            }
         }
     }
 
@@ -114,8 +152,6 @@ public class SocketManager {
             System.out.println("监听到消息========" + s);
             mAckRequest = ackRequest;
             ChatMessage chatMessage = GsonUtil.GsonToBean(s, ChatMessage.class);
-            historyService.createTable(chatMessage.getFromId());
-            historyService.createTable(chatMessage.getToId());
             handleChatMessage(chatMessage, ackRequest);
             if (chatMessage.getBodyType() <= 7){
                 historyService.insetData(chatMessage, chatMessage.getFromId());
@@ -156,12 +192,10 @@ public class SocketManager {
     }
 
     // 存入离线消息表
-    private void addLineMsg(int bodyType, int status, ChatMessage s) {
+    public static void addLineMsg(int bodyType, int status, ChatMessage s) {
         if (bodyType == 7) {
             if (status == 1) {
                 s.setMsgStatus(2);
-            } else if (status == RedEnvelopeBean.STATUS_ALREADY_RECEIVED) {
-                s.setMsgStatus(RedEnvelopeBean.STATUS_ALREADY_RECEIVED);
             }
         }else {
             s.setMsgStatus(2);
@@ -172,13 +206,13 @@ public class SocketManager {
         }
     }
 
-    private void sendChatMessage(SocketIOClient client, ChatMessage s) {
+    public static void sendChatMessage(SocketIOClient client, ChatMessage s) {
         String json = GsonUtil.BeanToJson(s);
         System.out.println("回调消息========" + json);
         client.sendEvent("chat", json);
     }
 
-    private void sendChatMessage(String client) {
+    public void sendChatMessage(String client) {
         List<ChatMessage> msg = chatService.getOffLineMsg(client);
         if (msg.size() > 0) {
             for (int i = 0; i < msg.size(); i++) {

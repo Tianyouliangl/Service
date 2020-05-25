@@ -131,16 +131,15 @@ public class GsonUtil {
         return msg;
     }
 
-    public static ChatMessage chatOnLine(String fId,int type){
+    public static ChatMessage chatOnLine(String name,int type){
         ChatMessage msg = new ChatMessage();
-        msg.setFromId(fId);
         msg.setTime(System.currentTimeMillis());
         if (type == 1){
             msg.setType(2);
-            msg.setBody(fId+"上线了!");
+            msg.setBody(name+" 上线了!");
         }else if (type == 0){
             msg.setType(2);
-            msg.setBody(fId+"下线了!");
+            msg.setBody(name+" 下线了!");
         }
        return msg;
     }

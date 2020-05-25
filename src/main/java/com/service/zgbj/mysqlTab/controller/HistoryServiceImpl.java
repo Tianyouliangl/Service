@@ -38,6 +38,7 @@ public class HistoryServiceImpl implements HistoryService {
                 "displaytime INT (11)," +
                 "time BIGINT(20)" + ")" +
                 "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
+        System.out.println("Sql:-------" + sql);
         jdbcTemplate.update(sql);
     }
 
@@ -58,6 +59,7 @@ public class HistoryServiceImpl implements HistoryService {
         HashMap<String, Object> statusMap = new HashMap<>();
         List<ChatMessage> chatMessageList = new ArrayList<>();
         String t_name = OfTenUtils.replace(tableName);
+        createTable(t_name);
         Long mTime = map.get(conversation);
         if (pageNo > 1) {
             if (mTime != null) {
@@ -115,7 +117,7 @@ public class HistoryServiceImpl implements HistoryService {
         String sql = "SELECT * FROM  history_" + tName + " WHERE pid = " + "'" + pid + "'";
         System.out.println(sql);
         List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
-        if (maps != null && maps.size() > 0){
+        if (maps != null && maps.size() > 0) {
             return 1;
         }
         return 0;
