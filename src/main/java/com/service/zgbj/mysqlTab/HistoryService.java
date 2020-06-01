@@ -8,4 +8,5 @@ public interface HistoryService {
     String getChatMessage(String tableName,String conversation,int pageNo,int pageSize);
     void updateHistoryStatus(String tabName,int status,String pid);
     int getMsg(String tabName,String pid);
+
 }
