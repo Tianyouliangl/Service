@@ -1,11 +1,13 @@
 package com.service.zgbj.mysqlTab.controller;
 
 import com.corundumstudio.socketio.SocketIOClient;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.service.zgbj.im.ChatMessage;
 import com.service.zgbj.im.SocketManager;
 import com.service.zgbj.mysqlTab.UserService;
 import com.service.zgbj.utils.GsonUtil;
 import com.service.zgbj.utils.OfTenUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -534,6 +536,22 @@ public class UserServiceImpl implements UserService {
     public String addFriendMsg(String to_id, String from_id, String pid, int friend_type, int source, String content) {
         createTable(to_id, from_id);
         String json = GsonUtil.BeanToJson(updateInsertTable(to_id, from_id, pid, friend_type, source, content));
+        SocketIOClient client = SocketManager.mClientMap.get(to_id);
+        if (client != null){
+            String info = getUserInfo(to_id);
+            try {
+                JSONObject object = new JSONObject(info);
+                if (object.has("username")){
+                    Object username = object.get("username");
+                    ChatMessage message = new ChatMessage();
+                    message.setType(2);
+                    message.setBody(username+"请求加为好友");
+                    SocketManager.sendChatMessage(client,message);
+                }
+            }catch (Exception e){
+
+            }
+        }
         System.out.println(json);
         return GsonUtil.unicodeToUtf8(json);
     }
