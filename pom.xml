@@ -16,8 +16,6 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
-        <thymeleaf-layout-dialect.version>2.1.1</thymeleaf-layout-dialect.version>
     </properties>
 
     <dependencies>
@@ -96,6 +94,8 @@
             <artifactId>android-json</artifactId>
             <version>0.0.20131108.vaadin1</version>
         </dependency>
+
+         <!--引入thymeleaf模板引擎-->
 
 
     </dependencies>
