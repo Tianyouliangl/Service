@@ -83,9 +83,22 @@ public class DataBaseImpl implements DataBaseService {
                 "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
         System.out.println("SQL:======" + sql_red);
 
+        //会话列表
+        String sql_session = "CREATE TABLE IF NOT EXISTS " + " table_session" + " (" +
+                "id INT (11) NOT NULL AUTO_INCREMENT PRIMARY KEY ," +
+                "from_image_url VARCHAR(255)," +
+                "from_id VARCHAR(255)," +
+                "from_uer_name VARCHAR(255)," +
+                "unreadmsg_num INT(11)," +
+                "last_msg VARCHAR(255)" + ")" +
+                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
+        System.out.println("SQL:======" + sql_session);
+
         jdbcTemplate.update(sql_user);
         jdbcTemplate.update(sql_lin);
         jdbcTemplate.update(sql_red);
+        jdbcTemplate.update(sql_session);
+
 
 
     }
