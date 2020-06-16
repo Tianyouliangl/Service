@@ -30,7 +30,7 @@ public class HistoryServiceImpl implements HistoryService {
                 "from_id VARCHAR (255)," +
                 "to_id VARCHAR (255)," +
                 "pid VARCHAR (255)," +
-                "body VARCHAR (255)," +
+                "body TEXT," +
                 "conversation VARCHAR (255)," +
                 "body_type INT (11)," +
                 "msg_status INT (11)," +

@@ -2,7 +2,9 @@ package com.service.zgbj.mysqlTab.controller;
 
 import com.service.zgbj.im.ChatMessage;
 import com.service.zgbj.im.RedEnvelopeBean;
+import com.service.zgbj.im.SocketBean;
 import com.service.zgbj.mysqlTab.ChatService;
+import com.service.zgbj.mysqlTab.SocketConnectService;
 import com.service.zgbj.utils.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class ChatServiceImpl implements ChatService{
+public class ChatServiceImpl implements ChatService,SocketConnectService{
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -141,5 +143,85 @@ public class ChatServiceImpl implements ChatService{
         System.out.println(sql);
         Object args[] = {bean.getFromId(), bean.getToId(), bean.getPid(), bean.getBody(), bean.getTime(), bean.getStatus(), bean.getConversation()};
         jdbcTemplate.update(sql, args);
+    }
+
+    @Override
+    public void insert(SocketBean socketBean) {
+        try {
+            String sql = "INSERT into table_socket (uid,token,mobile) VALUE (?,?,?)";
+            System.out.println(sql);
+            Object args[] = {socketBean.getUid(), socketBean.getToken(), socketBean.getMobile()};
+            int code = jdbcTemplate.update(sql, args);
+            if (code > 0) {
+                System.out.println("添加成功");
+            }
+        } catch (Exception e) {
+            System.out.println("insert socket" + e.toString());
+        }
+    }
+
+    @Override
+    public Boolean whereIsOnline(String uid) {
+        List<Map<String, Object>> map;
+        try {
+            String sql = "SELECT * FROM table_socket WHERE uid = " + "'" + uid + "'";
+            System.out.println(sql);
+            map = jdbcTemplate.queryForList(sql);
+        } catch (Exception e) {
+            map = null;
+            System.out.println("whereIsOnline:" + e.toString());
+        }
+        if (map != null && map.size() > 0) {
+            return true;
+        }
+        return false;
+    }
+
+
+    @Override
+    public void delete(String token) {
+        try {
+            String sql = "DELETE FROM table_socket WHERE token = " + "'" + token + "'";
+            System.out.println(sql);
+            int update = jdbcTemplate.update(sql);
+            if (update > 0) {
+                System.out.println("删除成功");
+            }
+        } catch (Exception e) {
+            System.out.println("delete token:" + e.toString());
+        }
+    }
+
+    @Override
+    public String getToken(String uid) {
+        List<Map<String, Object>> map;
+        try {
+            String sql = "SELECT * FROM table_socket WHERE uid = " + "'" + uid + "'";
+            System.out.println(sql);
+            map = jdbcTemplate.queryForList(sql);
+        } catch (Exception e) {
+            map = null;
+            System.out.println("getToken:" + e.toString());
+        }
+        if (map != null && map.size() > 0) {
+            String token = map.get(0).get("token").toString();
+            System.out.println("token:" + token);
+            return token;
+        }
+        return "";
+    }
+
+    @Override
+    public void updateToken(String token, String uid) {
+        try {
+            String sql = "UPDATE table_socket SET token =" + "'" + token + "'" + "WHERE uid = " + "'" + uid + "'";
+            System.out.println(sql);
+            int update = jdbcTemplate.update(sql);
+            if (update > 0) {
+                System.out.println("修改成功");
+            }
+        } catch (Exception e) {
+            System.out.println("updateToken:" + e.toString());
+        }
     }
 }

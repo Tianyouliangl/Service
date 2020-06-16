@@ -268,6 +268,10 @@ public class UserServiceImpl implements UserService {
                 userMap.put("friend_type", map.get("friend_type"));
                 userMap.put("source", map.get("source"));
                 userMap.put("content", map.get("content"));
+                String json_from = getUserInfo(map.get("from_id").toString());
+                String json_to = getUserInfo(map.get("to_id").toString());
+                userMap.put("fromUserInfo",json_from);
+                userMap.put("toUserInfo",json_to);
                 userList.add(userMap);
             }
         } else {
@@ -357,7 +361,7 @@ public class UserServiceImpl implements UserService {
             statusMap.put("code", 0);
             statusMap.put("msg", "暂无好友信息.");
         }
-        statusMap.put("data", map);
+        statusMap.put("data", userMap);
         String json = GsonUtil.BeanToJson(statusMap);
         System.out.println(json);
         return GsonUtil.unicodeToUtf8(json);
@@ -395,6 +399,7 @@ public class UserServiceImpl implements UserService {
             userMap.put("uid", map.get("uid"));
             userMap.put("money", map.get("money"));
             userMap.put("online", map.get("online"));
+            userMap.put("token",OfTenUtils.getRandomUid());
         } else {
             statusMap.put("code", 0);
             statusMap.put("msg", "用户不存在或者密码错误");
