@@ -3,6 +3,7 @@ package com.service.zgbj.mysqlTab.controller;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.service.zgbj.im.ChatMessage;
+import com.service.zgbj.im.FriendBean;
 import com.service.zgbj.im.SocketManager;
 import com.service.zgbj.mysqlTab.UserService;
 import com.service.zgbj.utils.GsonUtil;
@@ -542,20 +543,20 @@ public class UserServiceImpl implements UserService {
         createTable(to_id, from_id);
         String json = GsonUtil.BeanToJson(updateInsertTable(to_id, from_id, pid, friend_type, source, content));
         SocketIOClient client = SocketManager.mClientMap.get(to_id);
+        String info = getUserInfo(from_id);
+        ChatMessage message = new ChatMessage();
         if (client != null){
-            String info = getUserInfo(to_id);
-            try {
-                JSONObject object = new JSONObject(info);
-                if (object.has("username")){
-                    Object username = object.get("username");
-                    ChatMessage message = new ChatMessage();
-                    message.setType(2);
-                    message.setBody(username+"请求加为好友");
-                    SocketManager.sendChatMessage(client,message);
-                }
-            }catch (Exception e){
-
+            FriendBean bean = GsonUtil.GsonToBean(info, FriendBean.class);
+            String name = bean.getData().getUsername();
+            if (!name.isEmpty()){
+                message.setType(2);
+                message.setBody(name+"请求加为好友");
+                SocketManager.sendChatMessage(client,message);
+            }else {
+                System.out.println("name is null");
             }
+        }else {
+            System.out.println("不在线");
         }
         System.out.println(json);
         return GsonUtil.unicodeToUtf8(json);
@@ -579,6 +580,9 @@ public class UserServiceImpl implements UserService {
                         statusMap.put("msg", "成功");
                     }
                 }
+            }else {
+                statusMap.put("code", 1);
+                statusMap.put("msg", "成功");
             }
         } else {
             statusMap.put("code", 0);

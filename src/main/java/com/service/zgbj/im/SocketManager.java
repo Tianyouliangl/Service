@@ -115,7 +115,7 @@ public class SocketManager {
             } else {
                 chatService.insert(socketInfo);
             }
-            System.out.println("-------当前连接人数--------" + mClientMap.size());
+            System.out.println("-------当前连接人数--------" + (mClientMap.size()/2));
             sendChatMessage(socketInfo.getUid());
         }
     }
