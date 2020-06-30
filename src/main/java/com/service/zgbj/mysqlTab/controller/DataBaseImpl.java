@@ -58,7 +58,7 @@ public class DataBaseImpl implements DataBaseService {
 
         String sql_lin = "CREATE TABLE IF NOT EXISTS " + " table_offline_msg " + " (" +
                 "id INT (11) NOT NULL AUTO_INCREMENT PRIMARY KEY ," +
-                "body VARCHAR(255)," +
+                "body TEXT," +
                 "body_type INT(11)," +
                 "conversation VARCHAR(255)," +
                 "from_id VARCHAR(255)," +
@@ -73,7 +73,7 @@ public class DataBaseImpl implements DataBaseService {
 
         String sql_red = "CREATE TABLE IF NOT EXISTS " + " table_red_envelope " + " (" +
                 "id INT (11) NOT NULL AUTO_INCREMENT PRIMARY KEY ," +
-                "body VARCHAR(255)," +
+                "body TEXT," +
                 "conversation VARCHAR(255)," +
                 "from_id VARCHAR(255)," +
                 "pid VARCHAR(255)," +

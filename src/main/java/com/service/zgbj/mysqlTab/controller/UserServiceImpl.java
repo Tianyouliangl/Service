@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.service.zgbj.im.ChatMessage;
 import com.service.zgbj.im.FriendBean;
 import com.service.zgbj.im.SocketManager;
+import com.service.zgbj.im.TextBody;
 import com.service.zgbj.mysqlTab.UserService;
 import com.service.zgbj.utils.GsonUtil;
 import com.service.zgbj.utils.OfTenUtils;
@@ -593,6 +594,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private Boolean addFriendTable(String from_id, String to_id, int source) {
+        String conviction = OfTenUtils.getConviction(from_id, to_id);
         Map<String, Object> map = null;
         try {
             String sql = "SELECT * FROM table_user WHERE uid = " + "'" + from_id + "'";
@@ -608,6 +610,23 @@ public class UserServiceImpl implements UserService {
                 Object args[] = {map.get("age"), map.get("birthday"), map.get("email"), map.get("image_url"), map.get("location"), map.get("mobile"), map.get("online"), map.get("sex"), map.get("sign"), map.get("uid"), map.get("username"), source, map.get("username")};
                 int code = jdbcTemplate.update(sql, args);
                 if (code > 0) {
+                    ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.setMsgStatus(2);
+                    chatMessage.setType(1);
+                    chatMessage.setBodyType(7);
+                    chatMessage.setConversation(conviction);
+                    chatMessage.setDisplaytime(1);
+                    chatMessage.setTime(System.currentTimeMillis());
+                    chatMessage.setPid(OfTenUtils.getPid());
+                    chatMessage.setFromId(from_id);
+                    chatMessage.setToId(to_id);
+                    chatMessage.setBody(GsonUtil.BeanToJson(new TextBody("已添加"+map.get("username")+",赶快打个招呼吧～")));
+                    SocketIOClient client = SocketManager.mClientMap.get(to_id);
+                    if (client != null){
+                        SocketManager.sendChatMessage(client,chatMessage);
+                    }else {
+                        SocketManager.addLineMsg(chatMessage);
+                    }
                     return true;
                 } else {
                     return false;

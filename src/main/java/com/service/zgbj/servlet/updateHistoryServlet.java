@@ -13,11 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/updateRedEnvelope/user")
-public class updateRedEnvelopeServlet extends HttpServlet {
+@WebServlet("/updateHistory/user")
+public class updateHistoryServlet extends HttpServlet {
 
-    @Autowired
-    private ChatServiceImpl chatService;
     @Autowired
     private HistoryServiceImpl historyService;
 
@@ -29,12 +27,8 @@ public class updateRedEnvelopeServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String pid = req.getParameter("pid");
-        String fromId = req.getParameter("fromId");
-        String toId = req.getParameter("toId");
-        historyService.updateHistoryStatus(fromId,RedEnvelopeBean.STATUS_ALREADY_RECEIVED,pid);
-        historyService.updateHistoryStatus(toId,RedEnvelopeBean.STATUS_ALREADY_RECEIVED,pid);
-        chatService.updateRedEnvelope(RedEnvelopeBean.STATUS_ALREADY_RECEIVED, pid);
-        String json = chatService.getRedEnvelopePid(pid);
+        String fromId = req.getParameter("uid");
+        String json = historyService.updateHistoryStatus(fromId, 2, pid);
         resp.getWriter().write(json);
     }
 }

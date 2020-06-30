@@ -25,7 +25,7 @@ public class SocketManager {
 
     private SocketConnectListener connectListener;
     private SocketDisConnectListener disConnectListener;
-    private SocketDataListener dataListener;
+    private SocketDataListener chatListener;
     private UserServiceImpl sqlService;
     private static ChatServiceImpl chatService;
     public static SocketIOServer socketService;
@@ -43,10 +43,10 @@ public class SocketManager {
             this.socketService = server;
             connectListener = new SocketConnectListener();
             disConnectListener = new SocketDisConnectListener();
-            dataListener = new SocketDataListener();
+            chatListener = new SocketDataListener();
             server.addConnectListener(connectListener);
             server.addDisconnectListener(disConnectListener);
-            server.addEventListener("chat", String.class, dataListener);
+            server.addEventListener("chat", String.class, chatListener);
         }
     }
 
@@ -174,12 +174,13 @@ public class SocketManager {
             mAckRequest = ackRequest;
             ChatMessage chatMessage = GsonUtil.GsonToBean(s, ChatMessage.class);
             handleChatMessage(chatMessage, ackRequest);
-            if (chatMessage.getBodyType() <= 7) {
-                historyService.createTable(OfTenUtils.replace(chatMessage.getFromId()));
-                historyService.createTable(OfTenUtils.replace(chatMessage.getToId()));
-                historyService.insetData(chatMessage, chatMessage.getFromId());
-                historyService.insetData(chatMessage, chatMessage.getToId());
+            historyService.createTable(OfTenUtils.replace(chatMessage.getFromId()));
+            historyService.createTable(OfTenUtils.replace(chatMessage.getToId()));
+            historyService.insetData(chatMessage, chatMessage.getFromId());
+            if (chatMessage.getBodyType() == 3){
+                chatMessage.setMsgStatus(4);
             }
+            historyService.insetData(chatMessage, chatMessage.getToId());
         }
     }
 
@@ -195,10 +196,10 @@ public class SocketManager {
             if (client != null) {
                 sendChatMessage(client, s);
             } else {
-                addLineMsg(bodyType, status, s);
+                addLineMsg(s);
             }
         } else {
-            addLineMsg(bodyType, status, s);
+            addLineMsg(s);
         }
         ackRequest.sendAckData(GsonUtil.BeanToJson(s));
     }
@@ -220,14 +221,8 @@ public class SocketManager {
     }
 
     // 存入离线消息表
-    public static void addLineMsg(int bodyType, int status, ChatMessage s) {
-        if (bodyType == 7) {
-            if (status == 1) {
-                s.setMsgStatus(2);
-            }
-        } else {
-            s.setMsgStatus(2);
-        }
+    public static void addLineMsg(ChatMessage s) {
+        s.setMsgStatus(2);
         Boolean aBoolean = chatService.insertChatMessage(s);
         if (aBoolean) {
             System.out.println("-------添加离线消息成功--------");

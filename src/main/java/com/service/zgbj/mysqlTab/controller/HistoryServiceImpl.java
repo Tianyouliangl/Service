@@ -104,22 +104,21 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public void updateHistoryStatus(String tabName, int status, String pid) {
+    public String updateHistoryStatus(String tabName, int status, String pid) {
+        HashMap<String, Object> statusMap = new HashMap<>();
         String t_name = OfTenUtils.replace(tabName);
         String sql = "UPDATE history_" + t_name + "   SET msg_status = " + "'" + status + "'" + " WHERE pid = " + "'" + pid + "'";
         System.out.println(sql);
-        jdbcTemplate.update(sql);
+        int update = jdbcTemplate.update(sql);
+        if (update > 0){
+            statusMap.put("code", 1);
+            statusMap.put("msg", "成功");
+            statusMap.put("data",new ChatMessage());
+        }else {
+            statusMap.put("code", 0);
+            statusMap.put("msg", "失败");
+        }
+        return GsonUtil.BeanToJson(statusMap);
     }
 
-    @Override
-    public int getMsg(String tabName, String pid) {
-        String tName = OfTenUtils.replace(tabName);
-        String sql = "SELECT * FROM  history_" + tName + " WHERE pid = " + "'" + pid + "'";
-        System.out.println(sql);
-        List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
-        if (maps != null && maps.size() > 0) {
-            return 1;
-        }
-        return 0;
-    }
 }
