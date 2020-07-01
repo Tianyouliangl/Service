@@ -60,7 +60,7 @@ public class HistoryServiceImpl implements HistoryService {
         List<ChatMessage> chatMessageList = new ArrayList<>();
         String t_name = OfTenUtils.replace(tableName);
         createTable(t_name);
-        Long mTime = map.get(conversation);
+        Long mTime = map.get(conversation+t_name);
         if (pageNo > 1) {
             if (mTime != null) {
                 sql = "SELECT * FROM ( SELECT * FROM history_" + t_name + " WHERE conversation = " + "'" + conversation + "'" + " AND time <" + mTime + " ORDER BY time DESC LIMIT " + pageSize + ") aa" + " ORDER BY time";
@@ -77,7 +77,7 @@ public class HistoryServiceImpl implements HistoryService {
         if (list.size() > 0) {
             statusMap.put("code", 1);
             statusMap.put("msg", "成功");
-            map.put((String) list.get(list.size() - 1).get("conversation"), (Long) list.get(0).get("time"));
+            map.put((String) list.get(list.size() - 1).get("conversation")+t_name, (Long) list.get(0).get("time"));
             for (int i = 0; i < list.size(); i++) {
                 Map<String, Object> map = list.get(i);
                 ChatMessage message = new ChatMessage();
