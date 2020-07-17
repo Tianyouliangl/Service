@@ -6,6 +6,7 @@ import com.service.zgbj.im.ChatMessage;
 import com.service.zgbj.im.FriendBean;
 import com.service.zgbj.im.SocketManager;
 import com.service.zgbj.im.TextBody;
+import com.service.zgbj.mysqlTab.HistoryService;
 import com.service.zgbj.mysqlTab.UserService;
 import com.service.zgbj.utils.GsonUtil;
 import com.service.zgbj.utils.OfTenUtils;
@@ -21,7 +22,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService,HistoryService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -89,6 +90,7 @@ public class UserServiceImpl implements UserService {
                         Map<String, Object> map_user = user_list.get(i);
                         if (!map_user.get("uid").equals(map.get("uid"))) {
                             String uid_user = (String) map_user.get("uid");
+                            createTableFriend(uid_user);
                             uid_list.add(uid_user);
                         }
                     }
@@ -594,7 +596,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private Boolean addFriendTable(String from_id, String to_id, int source) {
-        String conviction = OfTenUtils.getConviction(from_id, to_id);
+        String conviction = OfTenUtils.getConviction(from_id,to_id);
         Map<String, Object> map = null;
         try {
             String sql = "SELECT * FROM table_user WHERE uid = " + "'" + from_id + "'";
@@ -627,6 +629,7 @@ public class UserServiceImpl implements UserService {
                     }else {
                         SocketManager.addLineMsg(chatMessage);
                     }
+                    insetData(chatMessage,from_id);
                     return true;
                 } else {
                     return false;
@@ -642,6 +645,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private Boolean updateFriendMsg(String from_id, String to_id, String pid, int friend_type) {
+        createTableFriendMsg(from_id);
+        createTableFriendMsg(to_id);
         String sql_from_update = "UPDATE " + "friend_msg_" + OfTenUtils.replace(from_id) + " SET friend_type =" + friend_type + " WHERE pid = " + "'" + pid + "'";
         System.out.println(sql_from_update);
         int code = jdbcTemplate.update(sql_from_update);
@@ -779,5 +784,47 @@ public class UserServiceImpl implements UserService {
             money = (BigDecimal) maps.get(0).get("money");
         }
         return money;
+    }
+
+    @Override
+    public void createTable(String tableName) {
+        String tName = OfTenUtils.replace(tableName);
+        String sql = "CREATE TABLE IF NOT EXISTS " + " history_" + tName + " (" +
+                "id INT (11) NOT NULL AUTO_INCREMENT PRIMARY KEY ," +
+                "from_id VARCHAR (255)," +
+                "to_id VARCHAR (255)," +
+                "pid VARCHAR (255)," +
+                "body TEXT," +
+                "conversation VARCHAR (255)," +
+                "body_type INT (11)," +
+                "msg_status INT (11)," +
+                "type INT (11)," +
+                "displaytime INT (11)," +
+                "time BIGINT(20)" + ")" +
+                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
+        System.out.println("Sql:-------" + sql);
+        jdbcTemplate.update(sql);
+    }
+
+    @Override
+    public void insetData(ChatMessage msg, String tableName) {
+        String tName = OfTenUtils.replace(tableName);
+        createTable(tName);
+        String sql = "insert into" + " history_" + tName + "(from_id,to_id,pid,type,time,body,body_type,msg_status,conversation,displaytime) value (?,?,?,?,?,?,?,?,?,?)";
+        Object args[] = {msg.getFromId(), msg.getToId(), msg.getPid(), msg.getType(), msg.getTime(), msg.getBody(), msg.getBodyType(), msg.getMsgStatus(), msg.getConversation(), msg.getDisplaytime()};
+        int code = jdbcTemplate.update(sql, args);
+        if (code > 0) {
+            System.out.println("插入历史消息成功!----表名-=== history_" + tName);
+        }
+    }
+
+    @Override
+    public String getChatMessage(String tableName, String conversation, int pageNo, int pageSize) {
+        return null;
+    }
+
+    @Override
+    public String updateHistoryStatus(String tabName, int status, String pid) {
+        return null;
     }
 }

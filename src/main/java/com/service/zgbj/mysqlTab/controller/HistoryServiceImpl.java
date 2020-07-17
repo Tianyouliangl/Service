@@ -45,12 +45,24 @@ public class HistoryServiceImpl implements HistoryService {
     @Override
     public void insetData(ChatMessage msg, String tableName) {
         String tName = OfTenUtils.replace(tableName);
-        String sql = "insert into" + " history_" + tName + "(from_id,to_id,pid,type,time,body,body_type,msg_status,conversation,displaytime) value (?,?,?,?,?,?,?,?,?,?)";
-        Object args[] = {msg.getFromId(), msg.getToId(), msg.getPid(), msg.getType(), msg.getTime(), msg.getBody(), msg.getBodyType(), msg.getMsgStatus(), msg.getConversation(), msg.getDisplaytime()};
-        int code = jdbcTemplate.update(sql, args);
-        if (code > 0) {
-            System.out.println("插入历史消息成功!----表名-=== history_" + tName);
+        createTable(tName);
+        String sql_select = "SELECT * FROM history_"+ tName + " WHERE pid = " +  "'" + msg.getPid() + "'";
+        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql_select);
+        if (list.size() > 0){
+            String sql_update = "UPDATE history_" + tName + " SET body_type = " + msg.getBodyType() + " WHERE pid = " + "'" + msg.getPid() + "'";
+            int update = jdbcTemplate.update(sql_update);
+            if (update > 0){
+                System.out.println("更改历史消息成功!----表名-=== history_" + tName);
+            }
+        }else {
+            String sql = "insert into" + " history_" + tName + "(from_id,to_id,pid,type,time,body,body_type,msg_status,conversation,displaytime) value (?,?,?,?,?,?,?,?,?,?)";
+            Object args[] = {msg.getFromId(), msg.getToId(), msg.getPid(), msg.getType(), msg.getTime(), msg.getBody(), msg.getBodyType(), msg.getMsgStatus(), msg.getConversation(), msg.getDisplaytime()};
+            int code = jdbcTemplate.update(sql, args);
+            if (code > 0) {
+                System.out.println("插入历史消息成功!----表名-=== history_" + tName);
+            }
         }
+
     }
 
     @Override

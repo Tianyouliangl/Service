@@ -49,8 +49,9 @@ public class ChatServiceImpl implements ChatService,SocketConnectService{
                 message.setBodyType((int) map.get("body_type"));
                 message.setType((int) map.get("type"));
                 message.setTime((Long) map.get("time"));
+                message.setConversation((String)map.get("conversation"));
                 message.setMsgStatus((int) map.get("msg_status"));
-                message.setMsgStatus((int)map.get("displaytime"));
+                message.setDisplaytime((int)map.get("displaytime"));
                 chatMessageList.add(message);
             }
         }catch (Exception e){

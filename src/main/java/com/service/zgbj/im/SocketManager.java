@@ -243,7 +243,6 @@ public class SocketManager {
                 String pid = msg.get(i).getPid();
                 SocketIOClient clients = mClientMap.get(toId);
                 ChatMessage chatMessage = msg.get(i);
-                chatMessage.setConversation(OfTenUtils.getConviction(chatMessage.getFromId(),chatMessage.getToId()));
                 chatMessage.setMsgStatus(2);
                 if (clients != null){
                     sendChatMessage(clients,chatMessage);
