@@ -1,11 +1,14 @@
 package com.service.zgbj.servlet;
 
+import com.service.zgbj.im.BaseResponse;
+import com.service.zgbj.mysqlTab.controller.FileImpl;
 import com.service.zgbj.utils.GsonUtil;
 import com.service.zgbj.utils.OSSUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartResolver;
@@ -29,6 +32,8 @@ import java.util.*;
 @WebServlet("/uploadFile")
 public class upLoadServlet extends HttpServlet {
 
+    @Autowired
+    private FileImpl fileService;
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -43,14 +48,15 @@ public class upLoadServlet extends HttpServlet {
         if (multipartResolver.isMultipart(req)) {
             MultipartHttpServletRequest multiRequest = multipartResolver.resolveMultipart(req);
             Iterator<String> iter = multiRequest.getFileNames();
-            while (iter.hasNext()){
+            while (iter.hasNext()) {
                 MultipartFile mf = multiRequest.getFile(iter.next());
                 String fileName = mf.getOriginalFilename();
                 System.out.print("filename---:" + fileName);
-                if(fileName == null || fileName.trim().equals("")){
+                if (fileName == null || fileName.trim().equals("")) {
                     continue;
                 }
                 String fileType = fileName.substring(fileName.lastIndexOf('.'));
+                int type = OSSUtil.getFileType(fileType);
                 System.out.print("---文件后缀名----" + fileType + "\n");
                 File newFile = new File(fileName);
                 FileOutputStream os = new FileOutputStream(newFile);
@@ -58,12 +64,14 @@ public class upLoadServlet extends HttpServlet {
                 os.close();
                 mf.transferTo(newFile);
                 //上传到OSS
-                int type = OSSUtil.getFileType(fileType);
                 String uploadUrl = OSSUtil.upload(newFile, type);
                 if (null != uploadUrl && !uploadUrl.isEmpty()) {
                     statusMap.put("code", 1);
                     statusMap.put("msg", "成功");
                     statusMap.put("url", uploadUrl);
+                    if (type == OSSUtil.TYPE_PIC) {
+                        fileService.addOrUpdateFileUrl(fileName, uploadUrl);
+                    }
                 } else {
                     statusMap.put("code", 0);
                     statusMap.put("msg", "失败");

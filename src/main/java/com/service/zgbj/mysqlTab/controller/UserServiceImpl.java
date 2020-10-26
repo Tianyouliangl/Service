@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Service
-public class UserServiceImpl implements UserService,HistoryService {
+public class UserServiceImpl implements UserService, HistoryService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -105,27 +105,6 @@ public class UserServiceImpl implements UserService,HistoryService {
                         }
                     }
                     String sql2 = sql.trim().substring(0, sql.length() - 1);
-//                    for (int j = 0; j < uid_list.size(); j++) {
-//                        String s = uid_list.get(j);
-//                        String replace = OfTenUtils.replace(s);
-//                        String sql_friend = "SELECT * FROM friend_" + replace + " WHERE uid = " + "'" + uid + "'";
-//                        System.out.println(sql_friend);
-//                        List<Object> list = jdbcTemplate.query(sql_friend, new Object[]{}, new RowMapper<Object>() {
-//                            @Override
-//                            public Object mapRow(ResultSet resultSet, int i) throws SQLException {
-//                                return null;
-//                            }
-//                        });
-//                        if (list.size() <= 0 || list == null) {
-//                            Iterator<String> it = uid_list.iterator();
-//                            while(it.hasNext()){
-//                                String x = it.next();
-//                                if(x.equals(s)){
-//                                    it.remove();
-//                                }
-//                            }
-//                        }
-//                    }
 
                     if (uid_list.size() > 0) {
                         for (int k = 0; k < user_list.size(); k++) {
@@ -274,8 +253,8 @@ public class UserServiceImpl implements UserService,HistoryService {
                 userMap.put("content", map.get("content"));
                 String json_from = getUserInfo(map.get("from_id").toString());
                 String json_to = getUserInfo(map.get("to_id").toString());
-                userMap.put("fromUserInfo",json_from);
-                userMap.put("toUserInfo",json_to);
+                userMap.put("fromUserInfo", json_from);
+                userMap.put("toUserInfo", json_to);
                 userList.add(userMap);
             }
         } else {
@@ -403,7 +382,7 @@ public class UserServiceImpl implements UserService,HistoryService {
             userMap.put("uid", map.get("uid"));
             userMap.put("money", map.get("money"));
             userMap.put("online", map.get("online"));
-            userMap.put("token",OfTenUtils.getRandomUid());
+            userMap.put("token", OfTenUtils.getRandomUid());
         } else {
             statusMap.put("code", 0);
             statusMap.put("msg", "用户不存在或者密码错误");
@@ -545,20 +524,21 @@ public class UserServiceImpl implements UserService,HistoryService {
     public String addFriendMsg(String to_id, String from_id, String pid, int friend_type, int source, String content) {
         createTable(to_id, from_id);
         String json = GsonUtil.BeanToJson(updateInsertTable(to_id, from_id, pid, friend_type, source, content));
-        SocketIOClient client = SocketManager.mClientMap.get(to_id);
+        HashMap<String, SocketIOClient> map = SocketManager.mClientMap.get(to_id);
+        SocketIOClient client = map.get(getToken(to_id));
         String info = getUserInfo(from_id);
         ChatMessage message = new ChatMessage();
-        if (client != null){
+        if (client != null) {
             FriendBean bean = GsonUtil.GsonToBean(info, FriendBean.class);
             String name = bean.getData().getUsername();
-            if (!name.isEmpty()){
-                message.setType(2);
-                message.setBody(name+"请求加为好友");
-                SocketManager.sendChatMessage(client,message);
-            }else {
+            if (!name.isEmpty()) {
+                message.setType(4);
+                message.setBody(name + "请求加为好友");
+                SocketManager.sendChatMessage(client, message);
+            } else {
                 System.out.println("name is null");
             }
-        }else {
+        } else {
             System.out.println("不在线");
         }
         System.out.println(json);
@@ -583,7 +563,7 @@ public class UserServiceImpl implements UserService,HistoryService {
                         statusMap.put("msg", "成功");
                     }
                 }
-            }else {
+            } else {
                 statusMap.put("code", 1);
                 statusMap.put("msg", "成功");
             }
@@ -596,7 +576,7 @@ public class UserServiceImpl implements UserService,HistoryService {
     }
 
     private Boolean addFriendTable(String from_id, String to_id, int source) {
-        String conviction = OfTenUtils.getConviction(from_id,to_id);
+        String conviction = getConversation(from_id, to_id);
         Map<String, Object> map = null;
         try {
             String sql = "SELECT * FROM table_user WHERE uid = " + "'" + from_id + "'";
@@ -622,14 +602,15 @@ public class UserServiceImpl implements UserService,HistoryService {
                     chatMessage.setPid(OfTenUtils.getPid());
                     chatMessage.setFromId(from_id);
                     chatMessage.setToId(to_id);
-                    chatMessage.setBody(GsonUtil.BeanToJson(new TextBody("已添加"+map.get("username")+",赶快打个招呼吧～")));
-                    SocketIOClient client = SocketManager.mClientMap.get(to_id);
-                    if (client != null){
-                        SocketManager.sendChatMessage(client,chatMessage);
-                    }else {
+                    chatMessage.setBody(GsonUtil.BeanToJson(new TextBody("已添加" + map.get("username") + ",赶快打个招呼吧～")));
+                    HashMap<String, SocketIOClient> hashMap = SocketManager.mClientMap.get(to_id);
+                    SocketIOClient client = hashMap.get(getToken(to_id));
+                    if (client != null) {
+                        SocketManager.sendChatMessage(client, chatMessage);
+                    } else {
                         SocketManager.addLineMsg(chatMessage);
                     }
-                    insetData(chatMessage,from_id);
+                    insetData(chatMessage, from_id);
                     return true;
                 } else {
                     return false;
@@ -642,6 +623,24 @@ public class UserServiceImpl implements UserService,HistoryService {
         } else {
             return false;
         }
+    }
+
+    public String getToken(String uid) {
+        List<Map<String, Object>> map;
+        try {
+            String sql = "SELECT * FROM table_socket WHERE uid = " + "'" + uid + "'";
+            System.out.println(sql);
+            map = jdbcTemplate.queryForList(sql);
+        } catch (Exception e) {
+            map = null;
+            System.out.println("getToken:" + e.toString());
+        }
+        if (map != null && map.size() > 0) {
+            String token = map.get(0).get("token").toString();
+            System.out.println("token:" + token);
+            return token;
+        }
+        return "";
     }
 
     private Boolean updateFriendMsg(String from_id, String to_id, String pid, int friend_type) {
@@ -826,5 +825,49 @@ public class UserServiceImpl implements UserService,HistoryService {
     @Override
     public String updateHistoryStatus(String tabName, int status, String pid) {
         return null;
+    }
+
+    @Override
+    public String getConversation(String fromId, String toId) {
+        String conversation = null;
+        String t_name = OfTenUtils.replace(fromId);
+        createTable(fromId);
+        createTable(toId);
+        String sql = "SELECT * FROM history_" + t_name + " WHERE from_id = " + "'" + fromId + "'" + " AND to_id = " + "'" + toId + "'";
+        System.out.println("sql  查询conversation :::    " + sql);
+        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
+        if (list.size() > 0) {
+             conversation = (String) list.get(0).get("conversation");
+            System.out.println("conversation   :::    " + conversation);
+        } else {
+            String sql2 = "SELECT * FROM history_" + t_name + " WHERE from_id = " + "'" + toId + "'" + " AND to_id = " + "'" + fromId + "'";
+            System.out.println("sql  查询conversation :::    " + sql2);
+            List<Map<String, Object>> list2 = jdbcTemplate.queryForList(sql2);
+            if (list2.size() > 0) {
+                conversation = (String) list2.get(0).get("conversation");
+                System.out.println("conversation   :::    " + conversation);
+            } else {
+                String t_name2 = OfTenUtils.replace(toId);
+                String sql3 = "SELECT * FROM history_" + t_name2 + " WHERE from_id = " + "'" + fromId + "'" + " AND to_id = " + "'" + toId + "'";
+                System.out.println("sql 查询conversation  :::    " + sql3);
+                List<Map<String, Object>> list3 = jdbcTemplate.queryForList(sql3);
+                if (list3.size() > 0) {
+                    conversation = (String) list3.get(0).get("conversation");
+                    System.out.println("conversation   :::    " + conversation);
+                }else {
+                    String sql4 = "SELECT * FROM history_" + t_name2 + " WHERE from_id = " + "'" + toId + "'" + " AND to_id = " + "'" + fromId + "'";
+                    System.out.println("sql  查询conversation :::    " + sql4);
+                    List<Map<String, Object>> list4 = jdbcTemplate.queryForList(sql4);
+                    if (list4.size() > 0) {
+                        conversation = (String) list4.get(0).get("conversation");
+                        System.out.println("conversation   :::    " + conversation);
+                    }else {
+                        conversation = OfTenUtils.getPid();
+                        System.out.println("未找到conversation   :::    " + conversation);
+                    }
+                }
+            }
+        }
+        return conversation;
     }
 }

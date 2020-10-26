@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.service.zgbj.im.ChatMessage;
+import com.service.zgbj.im.FriendBean;
 import com.service.zgbj.im.RedEnvelopeBean;
 
 import java.io.UnsupportedEncodingException;
@@ -134,14 +135,21 @@ public class GsonUtil {
     public static ChatMessage chatOnLine(String name,int type){
         ChatMessage msg = new ChatMessage();
         msg.setTime(System.currentTimeMillis());
+        msg.setType(2);
         if (type == 1){
-            msg.setType(2);
             msg.setBody(name+" 上线了!");
         }else if (type == 0){
-            msg.setType(2);
             msg.setBody(name+" 下线了!");
         }
        return msg;
+    }
+
+    public static ChatMessage chatOnLine(FriendBean.DataBean bean){
+        ChatMessage msg = new ChatMessage();
+        msg.setTime(System.currentTimeMillis());
+        msg.setType(2);
+        msg.setBody(GsonUtil.BeanToJson(bean));
+        return msg;
     }
 
     public static ChatMessage chatRedEnvelope(String fId){

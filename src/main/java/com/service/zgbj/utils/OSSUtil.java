@@ -3,11 +3,12 @@ package com.service.zgbj.utils;
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
-import com.aliyun.oss.model.CannedAccessControlList;
-import com.aliyun.oss.model.CreateBucketRequest;
-import com.aliyun.oss.model.PutObjectRequest;
-import com.aliyun.oss.model.PutObjectResult;
+import com.aliyun.oss.model.*;
+import com.service.zgbj.mysqlTab.controller.FileImpl;
+import com.service.zgbj.mysqlTab.controller.HistoryServiceImpl;
 import com.service.zgbj.oss.ConstantProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -22,6 +23,7 @@ public class OSSUtil {
     public static int TYPE_PIC = 0;
     public static int TYPE_VOICE = 1;
     public static int TYPE_OTHER = 2;
+
 
     public static String upload(File file, int type) {
         System.out.print("开始上传文件\n");
@@ -64,8 +66,8 @@ public class OSSUtil {
             ossClient.setBucketAcl(bucketName, CannedAccessControlList.PublicRead);
             if (null != result) {
                 // "https://learn-com-earn-agg.oss-cn-beijing.aliyuncs.com/"
-                System.out.print("文件上传成功----" + fileUrl+"\n");
                 String url = "https://" + bucketName +"."+ endpoint + "/" +fileUrl;
+                System.out.print("文件上传成功----name:"+file.getName()+"---url:" + url+"\n");
                 file.delete();
                 return url;
             }

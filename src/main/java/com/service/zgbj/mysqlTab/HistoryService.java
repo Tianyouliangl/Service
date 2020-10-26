@@ -7,4 +7,5 @@ public interface HistoryService {
     void insetData(ChatMessage msg,String tableName);
     String getChatMessage(String tableName,String conversation,int pageNo,int pageSize);
     String updateHistoryStatus(String tabName,int status,String pid);
+    String getConversation(String fromId,String toId);
 }

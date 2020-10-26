@@ -42,7 +42,7 @@ public class DataBaseImpl implements DataBaseService {
                 "id INT (11) NOT NULL AUTO_INCREMENT PRIMARY KEY ," +
                 "age INT (11)," +
                 "birthday VARCHAR(255)," +
-                "email VARCHAR(255)," +
+                "email VARCHAR(255) ," +
                 "image_url VARCHAR(255)," +
                 "location VARCHAR(255)," +
                 "mobile VARCHAR(255)," +
@@ -53,7 +53,7 @@ public class DataBaseImpl implements DataBaseService {
                 "sign VARCHAR(255)," +
                 "uid VARCHAR(255)," +
                 "username VARCHAR(255)" + ")" +
-                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
+                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8mb4'";
         System.out.println("SQL:======" + sql_user);
 
         String sql_lin = "CREATE TABLE IF NOT EXISTS " + " table_offline_msg " + " (" +
@@ -68,7 +68,7 @@ public class DataBaseImpl implements DataBaseService {
                 "to_id VARCHAR(255)," +
                 "type INT(11)," +
                 "displaytime INT(11)" + ")" +
-                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
+                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8mb4'";
         System.out.println("SQL:======" + sql_lin);
 
         String sql_red = "CREATE TABLE IF NOT EXISTS " + " table_red_envelope " + " (" +
@@ -80,7 +80,7 @@ public class DataBaseImpl implements DataBaseService {
                 "status INT(11)," +
                 "time BIGINT(11)," +
                 "to_id VARCHAR(255)" + ")" +
-                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
+                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8mb4'";
         System.out.println("SQL:======" + sql_red);
 
 
@@ -89,7 +89,7 @@ public class DataBaseImpl implements DataBaseService {
                 "uid VARCHAR(255)," +
                 "token VARCHAR(255)," +
                 "mobile VARCHAR(255)" + ")" +
-                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8'";
+                "ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET ='utf8mb4'";
         System.out.println("SQL:======" + sql_socket);
 
         jdbcTemplate.update(sql_user);

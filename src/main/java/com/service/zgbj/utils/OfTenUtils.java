@@ -185,7 +185,7 @@ public class OfTenUtils {
     public static String getPid(){
         StringBuilder stringBuffer = new StringBuilder();
         String time = String.valueOf(System.currentTimeMillis());
-        stringBuffer.append("AN")
+        stringBuffer.append("CHAT")
                 .append(getRandomInt())
                 .append(getRandomString())
                 .append(getRandomInt())
