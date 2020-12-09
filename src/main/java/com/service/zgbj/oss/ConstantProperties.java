@@ -26,12 +26,6 @@ public class ConstantProperties implements InitializingBean {
     @Value("${otherLocation}")
     private String aliyun_otherLocation;
 
-    @Value("${accessKeyId}")
-    private String aliyun_accessKeyId;
-
-    @Value("${accessKeySecret}")
-    private String aliyun_accessKeySecret;
-
 
     public static String OSS_BUCKET_URL;
     public static String OSS_BUCKET_NAME;
@@ -49,7 +43,7 @@ public class ConstantProperties implements InitializingBean {
         OSS_PIC_PATH = aliyun_picLocation;
         OSS_VOICE_PATH = aliyun_voiceLocation;
         OSS_OTHER_PATH = aliyun_otherLocation;
-        OSS_KEY_ID = aliyun_accessKeyId;
-        OSS_KEY_SECRET = aliyun_accessKeySecret;
+        OSS_KEY_ID = "LTAI4G2QDDbUeLujbBFLPdsP";
+        OSS_KEY_SECRET = "KO6Cr39EdysDuj6KBRvVvTWRqNdnLL";
     }
 }
